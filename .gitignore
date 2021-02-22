@@ -1,0 +1,7 @@
+
+# Annoying files
+**/.vs
+**/.vscode
+**/.idea
+azure.txt
+*.env
