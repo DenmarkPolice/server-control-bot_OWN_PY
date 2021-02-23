@@ -3,5 +3,5 @@
 **/.vs
 **/.vscode
 **/.idea
-azure.txt
+*.txt
 *.env

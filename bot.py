@@ -11,11 +11,15 @@ from subprocess import call
 load_dotenv('.env')
 
 await_response = []
-players = []
+watch_list = []
 client = commands.Bot(command_prefix = '.')
 
 @client.event
 async def on_ready():
+    
+    with open('watch_channels.txt') as file:
+        for line in file:
+            watch_list.append(line)
     print('Bot started')
 
 @client.event
@@ -34,17 +38,33 @@ async def on_message(message):
 @client.command()
 async def ping(ctx):
     if(ctx.guild != None):
-        await ctx.send('{0}ms'.format(round(client.latency * 1000)))
+        if(ctx.channel.name in watch_list):
+            await ctx.send('{0}ms'.format(round(client.latency * 1000)))
 
 @client.command(pass_context=True)
-async def turnOn(ctx):
-    await ctx.send('Turning on the server')
-    rc = call("./turn_on.sh")
+async def server(ctx, arg):
+    if(ctx.guild != None):
+        if(ctx.channel.name in watch_list):
+            if(arg == "on"):
+                await ctx.send('Turning on the server')
+                rc = call("./turn_on.sh")
+            elif(arg == "off"):
+                await ctx.send('Turning off the server')
+                rc = call("./turn_off.sh")
+            else:
+                await ctx.send('Invalid argument following .server')
 
-@client.command(pass_context=True)
-async def turnOff(ctx):
-    await ctx.send('Turning off the server')
-    rc = call("./turn_off.sh")
+@client.command()
+async def assign_channel(ctx):
+    if(ctx.guild != None):
+        mod = discord.utils.get(ctx.guild.roles, id=int(os.getenv('ROLE_ID')))
+        if(mod in ctx.author.roles):
+            watch_list.append(ctx.channel.name)
+            with open("watch_channels.txt", "a") as myfile:
+                myfile.write("{0}\n".format(ctx.channel.name))
+            await ctx.send("Text-channel {0} is now added to the watch list".format(ctx.channel.name))
+        else:
+            await ctx.send("You don't have permission to do this command")
 
 #@client.command(pass_context=True)
 #async def help(ctx):
