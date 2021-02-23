@@ -46,9 +46,9 @@ async def turnOff(ctx):
     await ctx.send('Turning off the server')
     rc = call("./turn_off.sh")
 
-@client.command(pass_context=True)
-async def help(ctx):
-    await ctx.send('The commands available are:')
-    await ctx.send('```* help - With all the commands\n* turnOn - To turn on the valheim server')
+#@client.command(pass_context=True)
+#async def help(ctx):
+#    await ctx.send('The commands available are:')
+#    await ctx.send('```* help - With all the commands\n* turnOn - To turn on the valheim server')
 
 client.run(os.getenv('DISCORD_TOKEN'))
