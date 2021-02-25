@@ -6,6 +6,9 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import os
 from subprocess import call
+import time
+from datetime import datetime
+import asyncio 
 
 
 load_dotenv('.env')
@@ -14,6 +17,31 @@ await_response = []
 watch_list = []
 client = commands.Bot(command_prefix = '.')
 
+server_time = 0
+server_status = False
+
+async def time_loop():
+    while True:
+        global server_time
+        global server_status
+        guild = client.get_guild(int(os.getenv('GUILD_ID')))
+        channel1 = guild.get_channel(int(os.getenv('CHANNEL_ID')))
+        #channel1 = discord.utils.get(guild.text_channels, name="valheim-boys")
+        messages = await channel1.history(limit=200).flatten()
+        now = datetime.now()
+        for msg in messages:
+            delta_time = now.timestamp() - msg.created_at.timestamp()
+            if(delta_time > (90*60) and not msg.pinned):
+                await msg.delete()
+
+        if(server_time < now.timestamp() and server_status):
+            print("Server ran out of time")
+            rc = call("./turn_off.sh")
+            server_status = False
+
+        await asyncio.sleep(10)
+
+
 @client.event
 async def on_ready():
     
@@ -21,6 +49,18 @@ async def on_ready():
         for line in file:
             watch_list.append(line)
     print('Bot started')
+    loop = asyncio.get_event_loop()
+    try:
+        asyncio.ensure_future(time_loop())
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        print("Closing Loop")
+        loop.close()
+
+
+
 
 @client.event
 async def on_member_join(member):
@@ -41,16 +81,34 @@ async def ping(ctx):
         if(ctx.channel.name in watch_list):
             await ctx.send('{0}ms'.format(round(client.latency * 1000)))
 
+
 @client.command(pass_context=True)
-async def server(ctx, arg):
+async def change(ctx,arg):
     if(ctx.guild != None):
         if(ctx.channel.name in watch_list):
+            global server_time
+            if(server_time != 0 and isinstance(arg,int)):
+                server_time += arg*60*60
+                await ctx.send('Added {0} hours to server uptime'.format(arg))
+
+@client.command(pass_context=True)
+async def server(ctx, arg):
+    
+    if(ctx.guild != None):
+        if(ctx.channel.name in watch_list):
+            global server_time
             if(arg == "on"):
+                now = datetime.now()
+                server_time = now.timestamp() + (60*60*2)
                 await ctx.send('Turning on the server')
+                await ctx.send('Server will be turned off automaticly in 2 hours if .change isnt used')
                 rc = call("./turn_on.sh")
+                global server_status
+                server_status = True
+
             elif(arg == "off"):
+                server_time = 0
                 await ctx.send('Turning off the server')
-                rc = call("./turn_off.sh")
             else:
                 await ctx.send('Invalid argument following .server')
 

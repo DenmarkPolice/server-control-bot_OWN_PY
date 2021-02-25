@@ -12,4 +12,4 @@ az login --service-principal --username ${ARRAY[0]} --tenant ${ARRAY[1]} --passw
 
 
 sleep 10s
-az vm start -g ${ARRAY[3]} -n ${ARRAY[4]}
+az vm start --resource-group ${ARRAY[3]} --name ${ARRAY[4]}
