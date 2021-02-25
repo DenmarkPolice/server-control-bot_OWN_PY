@@ -87,7 +87,7 @@ async def change(ctx,arg):
     if(ctx.guild != None):
         if(ctx.channel.name in watch_list):
             global server_time
-            if(server_time != 0 and isinstance(arg,int)):
+            if(server_time != 0 and isinstance(int(arg),int)):
                 server_time += arg*60*60
                 await ctx.send('Added {0} hours to server uptime'.format(arg))
 
@@ -101,7 +101,7 @@ async def server(ctx, arg):
                 now = datetime.now()
                 server_time = now.timestamp() + (60*60*2)
                 await ctx.send('Turning on the server')
-                await ctx.send('Server will be turned off automaticly in 2 hours if .change isnt used')
+                await ctx.send('Server will be turned off automatically in 2 hours if .change isnt used')
                 rc = call("./turn_on.sh")
                 global server_status
                 server_status = True
