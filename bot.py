@@ -47,17 +47,10 @@ async def on_ready():
     
     with open('watch_channels.txt') as file:
         for line in file:
-            watch_list.append(line)
+            watch_list.append(line[:-1])
     print('Bot started')
-    loop = asyncio.get_event_loop()
-    try:
-        asyncio.ensure_future(time_loop())
-        loop.run_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        print("Closing Loop")
-        loop.close()
+    await time_loop()
+    
 
 
 
@@ -88,7 +81,7 @@ async def change(ctx,arg):
         if(ctx.channel.name in watch_list):
             global server_time
             if(server_time != 0 and isinstance(int(arg),int)):
-                server_time += arg*60*60
+                server_time += int(arg)*60*60
                 await ctx.send('Added {0} hours to server uptime'.format(arg))
 
 @client.command(pass_context=True)
@@ -118,6 +111,12 @@ async def assign_channel(ctx):
         mod = discord.utils.get(ctx.guild.roles, id=int(os.getenv('ROLE_ID')))
         if(mod in ctx.author.roles):
             watch_list.append(ctx.channel.name)
+            print(watch_list)
+
+            with open('watch_channels.txt') as file:
+                for line in file:
+                    print("{0}".format(line))
+
             with open("watch_channels.txt", "a") as myfile:
                 myfile.write("{0}\n".format(ctx.channel.name))
             await ctx.send("Text-channel {0} is now added to the watch list".format(ctx.channel.name))
