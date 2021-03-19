@@ -33,7 +33,6 @@ async def time_loop():
 			delta_time = now.timestamp() - msg.created_at.timestamp()
 			if(delta_time > (90*60) and not msg.pinned):
 				await msg.delete()
-
 		if(server_time < now.timestamp() and server_status):
 			print("Server ran out of time")
 			rc = call("./turn_off.sh")
@@ -95,12 +94,13 @@ async def server(ctx, arg):
 				await ctx.send('Turning on the server')
 				await ctx.send('Server will be turned off automatically in 2 hours if .change isnt used')
 				rc = call("./turn_on.sh")
-				global server_status
 				server_status = True
 
 			elif(arg == "off"):
 				server_time = 0
 				await ctx.send('Turning off the server')
+				rc = call("./turn_on.sh")
+				server_status = False
 			else:
 				await ctx.send('Invalid argument following .server')
 
